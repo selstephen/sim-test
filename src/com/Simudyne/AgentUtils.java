@@ -16,6 +16,7 @@ import static com.Simudyne.AgentBreed.Breed_NC;
  */
 public class AgentUtils {
 
+
     // create agent from each line in file and populate collection
     public static List<Agent> getAgentsFromFile(String filename) throws IOException {
         List<Agent> agents = new ArrayList<Agent>();
@@ -41,25 +42,6 @@ public class AgentUtils {
     private static Agent getFileContents(String line) {
         Agent agent = Agent.create(line.split(","));
         return agent;
-    }
-
-    private static void incrementAge(List<Agent> agents) {
-        for (Agent agent : agents) {
-            agent.setAge(agent.getAge()+1);
-        }
-    }
-
-    // populate the affinity of each agent based on affinity calculation
-    private static void populateAffinity(List<Agent> agentsToProcess) {
-        for (Agent agent : agentsToProcess) {
-            agent.setAffinitySwitch(calculateAffinity(agent));
-        }
-    }
-
-    // affinity calculation
-    private static Float calculateAffinity(Agent agent) {
-        Float result = agent.getPaymentAtPurchase()/agent.getAttributePrice() + (2 * agent.getAttributePromotions() * agent.getIntertiaForSwitch());
-        return result;
     }
 
     // count the number of agents based on breed
@@ -165,11 +147,20 @@ public class AgentUtils {
 
         List<AgentResult> agentResults = new ArrayList<AgentResult>();
         for (int i = 1; i <= yearsToRun; i++) {
+
+            for (Agent agent : autoRenewAgents) {
+                agent.setAge(Calculations.incrementAge(agent.getAge(), 1));
+            }
+
+            for (Agent agent : agentsToProcess) {
+                agent.setAge(Calculations.incrementAge(agent.getAge(), 1));
+                agent.setAffinitySwitch(Calculations.calculateAffinity(agent.getPaymentAtPurchase(), agent.getAttributePrice(), agent.getAttributePromotions(), agent.getIntertiaForSwitch()));
+
+            }
+
             Integer totalBreedCCount = 0;
             Integer totalBreedNcCount = 0;
-            incrementAge(autoRenewAgents);
-            incrementAge(agentsToProcess);
-            populateAffinity(agentsToProcess);
+
             totalBreedCCount += countAgentsBasedOnBreed(autoRenewAgents, Breed_C.name());
             totalBreedCCount += countAgentsBasedOnBreed(agentsToProcess, Breed_C.name());
             totalBreedNcCount += countAgentsBasedOnBreed(autoRenewAgents, Breed_NC.name());
